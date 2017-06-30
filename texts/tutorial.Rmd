@@ -11,7 +11,7 @@ The texts have to be preprocessed before the application of topic modeling. In t
 library(tidyr)
 library(dplyr)
 library(stringr)
-load("~/tut_chat_df.rda")
+load("tut_chat_df.rda")
 chat$text.clean = chat$text %>% tolower() %>% str_replace_all(regex("http:.*( |$)")," ")  %>% str_replace_all(regex("[:punct:]")," ")
 head(chat,3)
 ```
@@ -40,7 +40,7 @@ TopicsDistributionOnUsers.txt -- matrix in which rows are users and columns are 
 
 Here, we get top-20 of the most probable words for each topic.
 ```{r}
-wint_lines = readLines(str_c("/principal/projects/streaming/tlda/", "WordsInTopics.txt"))
+wint_lines = readLines("WordsInTopics.txt"))
 cur_topic = 0
 
 wint = data.frame(word=c(), topic=c(), prob=c())
@@ -62,7 +62,7 @@ head(wint,3)
 Let's get topic probability distributions for each user. Since 52th column is empty, we can remove it. Then, we give columns names of the topis (N.b. topics numbers starts from zero).
 
 ```{r}
-topicsdist = read.table("~/shared/streaming/tlda/TopicsDistributionOnUsers.txt", sep="\t")
+topicsdist = read.table("TopicsDistributionOnUsers.txt", sep="\t")
 topicsdist = topicsdist[,-52]
 head(topicsdist)
 colnames(topicsdist) = c("user", str_c("topic", c(0:49)))
@@ -177,7 +177,6 @@ What else? It is not limited with users profiling. There are also game events. L
 ```{r}
 load(file="tut_text_df_task.rda")
 ```
-
 
 The number in column of event means its number in the data set. Its is just indicator and does not have much sense in framework of one game.
 
