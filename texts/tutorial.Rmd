@@ -1,0 +1,190 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+# Preprocessing
+
+The texts have to be preprocessed before the application of topic modeling. In the following chunk, we remove links to web pages and punctiation. We do not remove numbers, because, in some cases, they represent memes which are important for Dota 2 community. Besides, we convert letters to the lowercase.
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+load("~/tut_chat_df.rda")
+chat$text.clean = chat$text %>% tolower() %>% str_replace_all(regex("http:.*( |$)")," ")  %>% str_replace_all(regex("[:punct:]")," ")
+head(chat,3)
+```
+
+To study user profiles, we have to get chat messages of each user. Since we are working with ready model, we should not run following chunk. 
+```
+users = unique(chat$viewer)
+for (user in users){
+  x <- filter(chat, viewer == user)$text.clean
+  #x <- str_replace_all(str_replace_all(x, "\n", ""), "\r", "")
+  # DO NOT SAVE IT INTO PROJECT DIRECTORY
+  # AND NEVER COMMIT THESE FILES. NEVER.
+  # DO NOT FORGET TO CREATE DIRECTORIES
+  fileConn<-file(str_c("~/shared/streaming/users_messages/", user,".txt"))
+  writeLines(x, fileConn)
+  close(fileConn)
+}
+```
+
+# Twitter-LDA
+
+In this workshop, we work with ready output of Twitter-LDA.
+We work with following files:
+WordsInTopics.txt -- this file gives us 20 words with the highest probability for each topic
+TopicsDistributionOnUsers.txt -- matrix in which rows are users and columns are topics. Probabilities are at the intersections.
+
+Here, we get top-20 of the most probable words for each topic.
+```{r}
+wint_lines = readLines(str_c("/principal/projects/streaming/tlda/", "WordsInTopics.txt"))
+cur_topic = 0
+
+wint = data.frame(word=c(), topic=c(), prob=c())
+for (wint_line in wint_lines) {
+  # read line. if topic
+  if (str_detect(wint_line, "Topic [0-9]+:")){
+    cur_topic = as.numeric(str_replace(str_extract(wint_line, 'Topic [0-9]+'), 'Topic ', ''))
+  } else {
+    wint_split <- str_split(wint_line, '\t')[[1]]
+    wint <- rbind(wint, data.frame(topic=cur_topic, word=wint_split[2], porb=as.numeric(wint_split[3])))    
+  }
+}
+
+
+head(wint,3)
+```
+
+
+Let's get topic probability distributions for each user. Since 52th column is empty, we can remove it. Then, we give columns names of the topis (N.b. topics numbers starts from zero).
+
+```{r}
+topicsdist = read.table("~/shared/streaming/tlda/TopicsDistributionOnUsers.txt", sep="\t")
+topicsdist = topicsdist[,-52]
+head(topicsdist)
+colnames(topicsdist) = c("user", str_c("topic", c(0:49)))
+topicsdist$user = str_replace_all(topicsdist$user, ".txt", "")
+
+head(topicsdist)
+```
+
+```{r}
+chat %>% group_by(viewer) %>% count() %>%  ggplot() + geom_histogram(aes(n))
+```
+
+Since most users prefered not to write a lot of messages, we filter out 500 most active viewers.
+
+```{r}
+top_users = chat %>% group_by(viewer) %>% summarise(sum = n()) %>% arrange(-sum) %>% top_n(500)
+topicsdist_f = filter(topicsdist, user %in% top_users$viewer)
+rownames(topicsdist_f) = topicsdist_f$user
+topicsdist_f$user = NULL
+head(topicsdist_f)
+```
+
+Based on distributions of topic probabilities, we calculate the distance between viewers. Here, viewers with similar distributions are closer to each other. Then we apply hierarchical clustering to find groups of users with similar communication patterns.
+```{r}
+library(proxy)
+ldadist = dist(topicsdist_f, method = "Hellinger")
+clusters = hclust(ldadist)
+plot(clusters)
+```
+
+# Interpretation of clusters
+
+We prune our dendogram to find groups of users. 
+
+```{r}
+clusterCut = cutree(clusters, h=1.13)
+tab = cbind(clusters$labels, clusterCut) %>% as.data.frame()
+names(tab)[1] = "viewer"
+head(tab)
+```
+
+What we can do with this information?
+Firstly, let's match groups with topics. For that purpose, we take top-3 most probable topic for viewer.
+
+```{r}
+topicsdist_f$viewer = rownames(topicsdist_f)
+topicsdist_f = topicsdist_f %>% gather(topic,prob,1:50) %>% group_by(viewer) %>% top_n(3,prob) 
+```
+
+
+Here is our interpretation of topics. Let's match our labels of topics with viewers.
+
+```{r}
+save(topics,file="tut_topics.rda")
+topicsdist_f = left_join(topicsdist_f,topics)
+head(topicsdist_f)
+topicsdist_f = left_join(topicsdist_f,tab)
+```
+
+Now, we can check the association of groups in hierarchical clusters and labels of topics. Based on Pearson residuals, we can visualize the association. Orange color stands for positive association, blue color -- negative. The saturation of the color depends on the value of residuals.
+
+```{r}
+for_chi= table(topicsdist_f$category1,topicsdist_f$clusterCut)
+chisq <- chisq.test(for_chi)
+
+df_resid = chisq$residuals %>% as.data.frame()
+
+forch_df = as.data.frame(for_chi)
+forch_df$Freq = as.numeric(forch_df$Freq)
+df_resid$Var2 = as.factor(df_resid$Var2)
+library(ggplot2)
+ggplot() + 
+  geom_raster(data = df_resid, aes(Var1, Var2, fill = Freq), hjust = 0.5, vjust = 0.5) + 
+  scale_fill_gradient2("Pearson residuals", high = "#f1a340", mid = "#f7f7f7", low = "#998ec3", midpoint = 0) +
+  geom_text(data = forch_df, aes(Var1, Var2, label = Freq)) +
+  xlab("") +
+  ylab("") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 16)) +
+  theme(axis.text.y = element_text(size = 13)) +
+  theme(axis.title=element_text(size=18)) +
+  theme(legend.position="bottom")
+```
+
+Now, let's take a look on messages specific for each group of users.
+```{r}
+#chat = select(chat, -clusterCut)
+chat = left_join(chat,tab)
+```
+
+What the hell is going on?
+Dictionaries of twitch emotes:
+http://mashable.com/2014/08/08/twitch-emoticons/#vcBMu94oJGqt
+https://twitchemotes.com/
+https://www.reddit.com/r/DotA2/comments/3gujjn/basic_guide_to_twitch_emotes_in_dota/
+
+Do not hesitate to search here for meaning of emote:
+https://www.reddit.com/r/Twitch/
+
+
+```{r}
+View(filter(chat,clusterCut==1))
+View(filter(chat,clusterCut==2))
+View(filter(chat,clusterCut==3))
+View(filter(chat,clusterCut==4))
+View(filter(chat,clusterCut==5))
+View(filter(chat,clusterCut==6))
+View(filter(chat,clusterCut==7))
+```
+
+What else? It is not limited with users profiling. There are also game events. Let's try to analyze association of chat communication and game events in one game.
+
+```{r}
+load(file="tut_text_df_task.rda")
+```
+
+
+The number in column of event means its number in the data set. Its is just indicator and does not have much sense in framework of one game.
+
+TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17
+ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66
+AEGIS STEAL - https://youtu.be/okIwxyBvBKo?t=16
+FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143
+
+The game on Dotabuff: https://www.dotabuff.com/matches/2836936292
+The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042
