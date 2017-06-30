@@ -180,10 +180,10 @@ load(file="tut_text_df_task.rda")
 
 The number in column of event means its number in the data set. Its is just indicator and does not have much sense in framework of one game.
 
-TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17
-ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66
-AEGIS STEAL - https://youtu.be/okIwxyBvBKo?t=16
-FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143
+TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17    
+ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66   
+AEGIS STEAL - https://youtu.be/okIwxyBvBKo?t=16   
+FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143   
 
-The game on Dotabuff: https://www.dotabuff.com/matches/2836936292
+The game on Dotabuff: https://www.dotabuff.com/matches/2836936292   
 The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042
