@@ -178,12 +178,19 @@ What else? It is not limited with users profiling. There are also game events. L
 load(file="tut_text_df_task.rda")
 ```
 
-The number in column of event means its number in the data set. Its is just indicator and does not have much sense in framework of one game.
+You got the object 'match_df'. It includes chat communication during one game:    
+The game on Dotabuff: https://www.dotabuff.com/matches/2836936292   
+The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042
+
+You have a number of game events, happened during the game. What do some of them mean?
 
 TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17    
 ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66   
 AEGIS STEAL - https://youtu.be/okIwxyBvBKo?t=16   
 FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143   
 
-The game on Dotabuff: https://www.dotabuff.com/matches/2836936292   
-The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042
+You also have column 'duration' revealing the time of the match. It should navigate you on the video of match. 
+
+The number in each column of game event means its number in the data set. Its is just identifier and does not have much sense in framework of one game.
+
+In addition, we calculated the number of emotes in each message. Probably it expresses the reaction of the crowd? May be, May be...
