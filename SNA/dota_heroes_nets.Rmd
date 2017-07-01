@@ -233,21 +233,16 @@ net_vis_virtus_kiev = ggraph(net_virtus_k, layout = 'manual', node.position = ne
 net_vis_virtus_kiev
 ```
 
-In addition, we can find a subgraph in which every vertex has at least degree k. 
-And compare whether they changed after game update. 
+In order to find "universal" heroes, which can be found in various sets of other heroes, we can use such centrality metrics as betweenness. It represents the degree of which nodes stand between each other.
 
 ```{r}
-coreness(net_virtus_k) %>% 
-  sort() %>% 
-  tail(6)
-
-coreness(net_virtus_b) %>% 
+net_virtus_k %>% 
+  betweenness() %>% 
   sort() %>% 
   tail(6)
 ```
 
-
-Do the same for OG Dota2 team
+Now you can do all the same for OG Dota2 team.
 
 ```{r}
 edg_filtered = edg %>%
@@ -335,7 +330,6 @@ net_vis_og_kiev = ggraph(net_og_k, layout = 'manual', node.position = net_og_lay
 net_vis_og_kiev
 ```
 
-# Things to do...
-1. 
+# Tasks
+1. Find heroes with the highest betwenneess centrality for OG Dota2 team at Kiev Major. Are they different with those, which we found for Virtus.pro? Do they unite clusters? What are these clusters?
 2. Take one more Dota2 team (e.g. "Invictus Gaming", "Natus Vincere", "Team NP" or "Team Secret"), analyse its' hero picking pattern and compare with the cases of "OG Dota2" and "Virtus.pro".
-
