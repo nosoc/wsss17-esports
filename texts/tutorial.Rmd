@@ -101,7 +101,7 @@ plot(clusters)
 We prune our dendogram to find groups of users. 
 
 ```{r}
-clusterCut = cutree(clusters, h=1.13)
+clusterCut = cutree(clusters, h=1.1)
 tab = cbind(clusters$labels, clusterCut) %>% as.data.frame()
 names(tab)[1] = "viewer"
 head(tab)
@@ -151,15 +151,18 @@ ggplot() +
 
 Now, let's take a look on messages specific for each group of users.
 ```{r}
-#chat = select(chat, -clusterCut)
 chat = left_join(chat,tab)
-View(filter(chat,clusterCut==1)) # reactions on stream: different short messages
+View(filter(chat,clusterCut==1)) # communication with stream
 View(filter(chat,clusterCut==2)) # reactions on stream
-View(filter(chat,clusterCut==3)) # one spammer
-View(filter(chat,clusterCut==4)) # different spammers -- reddit memes and copypaste messages
+View(filter(chat,clusterCut==3)) # Discussion of action (to some extent)
+View(filter(chat,clusterCut==4)) # spammers against modes
 View(filter(chat,clusterCut==5)) # warning bot
 View(filter(chat,clusterCut==6)) # promotion bot
-View(filter(chat,clusterCut==7)) # kappa spammer. Kappa is the most popular emoji on twitch.tv
+View(filter(chat,clusterCut==7)) # hahaa meme
+View(filter(chat,clusterCut==8)) # bot
+View(filter(chat,clusterCut==9)) # bot
+View(filter(chat,clusterCut==10)) # one spammer
+
 ```
 
 What the hell is going on?
@@ -174,17 +177,17 @@ https://www.reddit.com/r/Twitch/
 
 # Task
 
-It is not limited with users profiling. There are also game events. Let's try to analyze association of chat communication and game events in one game.
+We can assume that the most of the chat activity is tightly connected with the game events. Let's try to analyze association of chat communication and game events in one game. We already know how to analyze the association between the cluster and thematic category. Now, please choose one game event and assess the relationship between game event and topics of communication. What is the interpretation of your findings?
 
-```{r}
+```{r} 
 load(file="tut_text_df_task.rda")
-```
+``` 
 
-You got the object 'match_df'. It includes chat communication during one game:    
-The game on Dotabuff: https://www.dotabuff.com/matches/2836936292   
-The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042
+'match_df' object contains chat communication during one particular game: 
+The game on Dotabuff: https://www.dotabuff.com/matches/2836936292  
+The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042  
 
-You have a number of game events, happened during the game. What do some of them mean?
+You have a number of game events. What do some of them mean?
 
 TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17    
 ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66   
@@ -192,7 +195,3 @@ AEGIS STEAL - https://youtu.be/okIwxyBvBKo?t=16
 FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143   
 
 You also have column 'duration' revealing the time of the match. It should navigate you on the video of match. 
-
-The number in each column of game event means its number in the data set. It is just an identifier and does not have much sense in rhe framework of one game.
-
-In addition, we calculated the number of emotes in each message. Probably it expresses the reaction of the crowd? May be, May be...
