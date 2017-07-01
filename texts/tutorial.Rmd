@@ -1,5 +1,6 @@
 ---
-title: "Untitled"
+title: "Text analysis in eSports Studies"
+author: "Ilya Musabirov, Denis Bulygin, Viktor Karepin, Vadim Voskresenskii, Alexander Sirotkin"
 output: html_document
 ---
 
@@ -8,6 +9,7 @@ output: html_document
 The texts have to be preprocessed before the application of topic modeling. In the following chunk, we remove links to web pages and punctiation. We do not remove numbers, because, in some cases, they represent memes which are important for Dota 2 community. Besides, we convert letters to the lowercase.
 
 ```{r}
+library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(stringr)
@@ -164,7 +166,7 @@ https://www.reddit.com/r/Twitch/
 
 
 ```{r}
-View(filter(chat,clusterCut==1)) # reactions on stream
+View(filter(chat,clusterCut==1)) # reactions on stream: different short messages
 View(filter(chat,clusterCut==2)) # reactions on stream
 View(filter(chat,clusterCut==3)) # one spammer
 View(filter(chat,clusterCut==4)) # different spammers -- reddit memes and copypaste messages
