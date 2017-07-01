@@ -11,6 +11,7 @@ The texts have to be preprocessed before the application of topic modeling. In t
 library(tidyr)
 library(dplyr)
 library(stringr)
+library(proxy)
 load("tut_chat_df.rda")
 chat$text.clean = chat$text %>% tolower() %>% str_replace_all(regex("http:.*( |$)")," ")  %>% str_replace_all(regex("[:punct:]")," ")
 head(chat,3)
@@ -87,7 +88,6 @@ head(topicsdist_f)
 
 Based on distributions of topic probabilities, we calculate the distance between viewers. Here, viewers with similar distributions are closer to each other. Then we apply hierarchical clustering to find groups of users with similar communication patterns.
 ```{r}
-library(proxy)
 ldadist = dist(topicsdist_f, method = "Hellinger")
 clusters = hclust(ldadist)
 plot(clusters)
@@ -191,6 +191,6 @@ FIRTSBLOOD - https://youtu.be/sQuRt5Dp3Bg?t=143
 
 You also have column 'duration' revealing the time of the match. It should navigate you on the video of match. 
 
-The number in each column of game event means its number in the data set. Its is just identifier and does not have much sense in framework of one game.
+The number in each column of game event means its number in the data set. It is just an identifier and does not have much sense in rhe framework of one game.
 
 In addition, we calculated the number of emotes in each message. Probably it expresses the reaction of the crowd? May be, May be...
