@@ -86,7 +86,7 @@ Meta:
 - percentage_wins - percentage of successful matches, when that pair of heroes were picked together;
 
 ```{r}
-edg = read.csv("./teams.csv", stringsAsFactors = FALSE)
+edg = read.csv("teams.csv", stringsAsFactors = FALSE)
 ```
 
 # Comparison of hero picking stratagies of two finalists teams of Kiev Major Tournament
