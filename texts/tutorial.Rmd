@@ -26,7 +26,7 @@ for (user in users){
   # DO NOT SAVE IT INTO PROJECT DIRECTORY
   # AND NEVER COMMIT THESE FILES. NEVER.
   # DO NOT FORGET TO CREATE DIRECTORIES
-  fileConn<-file(str_c("~/shared/streaming/users_messages/", user,".txt"))
+  fileConn<-file(str_c(user,".txt"))
   writeLines(x, fileConn)
   close(fileConn)
 }
@@ -34,7 +34,8 @@ for (user in users){
 
 # Twitter-LDA
 
-In this workshop, we work with ready output of Twitter-LDA.
+In this workshop, we work with ready output of Twitter-LDA:   
+https://github.com/minghui/Twitter-LDA    
 We work with following files:
 WordsInTopics.txt -- this file gives us 20 words with the highest probability for each topic
 TopicsDistributionOnUsers.txt -- matrix in which rows are users and columns are topics. Probabilities are at the intersections.
@@ -114,9 +115,9 @@ topicsdist_f = topicsdist_f %>% gather(topic,prob,1:50) %>% group_by(viewer) %>%
 
 
 Here is our interpretation of topics. Let's match our labels of topics with viewers.
-
 ```{r}
-save(topics,file="tut_topics.rda")
+load("tut_topics.rda")
+head(topics)
 topicsdist_f = left_join(topicsdist_f,topics)
 head(topicsdist_f)
 topicsdist_f = left_join(topicsdist_f,tab)
