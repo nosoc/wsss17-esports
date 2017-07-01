@@ -1,6 +1,20 @@
+---
+title: "Social network analysis in eSports Studies"
+author: "Ilya Musabirov, Denis Bulygin, Viktor Karepin, Vadim Voskresenskii, Alexander Sirotkin"
+output: html_document
+---
 
-# commented r packages loadings
+# Installation of required R packages
+
+First of all, we check which of the required packages are already installed.
+Install missing packages, if any.
+
 ```{r}
+list.of.packages <- c("magrittr", "dplyr", "igraph", "ggplot2", "ggraph")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) {install.packages(new.packages)}
+rm(list = c("new.packages", "list.of.packages"))
+
 library(magrittr)
 library(dplyr)
 library(igraph)
@@ -8,19 +22,39 @@ library(ggplot2)
 library(ggraph)
 ```
 
-# read dataset
+# Short introduction to SNA packages (igraph, ggraph) for R 
+
+Detailed introduction to SNA in R:
+http://kateto.net/network-visualization
+Page of ggraph, which is an extension for ggplot2 package:
+https://github.com/thomasp85/ggraph
+
 ```{r}
-# co-usage of heroes during dota2 matches, two competitions 
+
+
+```
+
+# Read dataset 
+
+In that tutorial we will use a dataset about co-usage of characters during Dota2 matches.
+Dataset covers two last major competitions, which happened in Boston and Kiev.
+
+Given csv-file (teams.csv) consist of edgelist with hero-hero pairs, which were used together in a match and metadata.
+Meta:
+- team - title of team, which picked that pair of heroes;
+- competition - tournament, where the match took place;
+- n_mathces - number of matches, when that particular pair of heroes were picked together;
+- wins - number of successful matches, when that pair of heroes were picked together;
+- percentage_wins - percentage of successful matches, when that pair of heroes were picked together;
+
+```{r}
 edg = read.csv("./teams.csv", stringsAsFactors = FALSE)
 ```
 
-# скрипт и ссылки на то откуда данные
-# +
-# добавить слайдв про сна и про героев, описание данных, патчей
+# Comparison of hero picking stratagies of two finalists teams of Kiev Major Tournament
 
-# введение в гграф и айграф
+Let's take history of hero picking for only two teams ("OG Dota2" and "Virtus.pro") for competition held in Kiev. And load edgelist to igraph object.
 
-# сравнение двух команд просто
 ```{r}
 edg_filtered = edg %>%
   filter(team %in% c("OG Dota2", "Virtus.pro"),
@@ -28,30 +62,56 @@ edg_filtered = edg %>%
 
 net = graph_from_data_frame(edg_filtered, directed = FALSE)
 
-ggraph(net, layout = 'fr') + 
-    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
-    geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
-    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
-    scale_edge_alpha(range = c(0.3, 0.9)) +
-    facet_edges(~ team) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+# Let's create ggraph object with all hero-hero pairs for both teams
+# transparency of edges is set to percentage of successful matches
+# width of edges is a number of matches played with that pair of heroes
+net_vis = ggraph(net, layout = 'fr') + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), colour = "steelblue3") + 
+    geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) 
+
+net_vis
+
+# Add text labels with heroes' titles to nodes
+net_vis = net_vis + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE)
+
+net_vis
+  
+# Split visualization by team to see the differences
+net_vis = net_vis + 
+  facet_edges(~ team)
+    
+net_vis
+
+# Minor cosmetic changes
+# Change the range of edge transparency scale
+# Set background and borders colour
+net_vis = net_vis + 
+  scale_edge_alpha(range = c(0.3, 0.9)) +
+  theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+net_vis
 ```
 
-# сравнение до/после патча для двух команд
+# Comparison of hero picking stratagies of two finalists teams of Kiev Major Tournament
+# Before and after game update (patch)
 ```{r}
-# комбинации героев
-# кластеризация?
+# Firstly, we take Virtus.pro team
 edg_filtered = edg %>%
   filter(team == "Virtus.pro")
 
+# Load to igraph
 net_virtus = graph_from_data_frame(edg_filtered, directed = FALSE)
 
-# VIRTUS PRO
+# Pre-compute position of nodes on 2-dimensional space
+# As we create separate visualizations, we have to freeze nodes' position
+# in order to make the graphs comparable
 net_virtus_layout = layout.fruchterman.reingold(net_virtus)
 net_virtus_layout = as.data.frame(net_virtus_layout)
 names(net_virtus_layout) = c("x", "y")
 
-ggraph(net_virtus, layout = 'manual', node.position = net_virtus_layout) + 
+# Draw network of Virtus.pro hero picking strategy for two tournaments
+net_vis_virtus = ggraph(net_virtus, layout = 'manual', node.position = net_virtus_layout) + 
     geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
     geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
     geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
@@ -59,56 +119,71 @@ ggraph(net_virtus, layout = 'manual', node.position = net_virtus_layout) +
     facet_edges(~competition) + 
     theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
 
+net_vis_virtus
+```
 
-
-# VIRTUS PRO BOSTON
+# Clusterization
+```{r}
+# Now, we take Virtus.pro team and their team history only for Boston Major
 net_virtus_b = delete.edges(net_virtus, which(E(net_virtus)$competition != "Boston"))
 
+# Next, we compute community detection to find densely connected subgraphs 
+# (e.i. combinations of heroes, which were more frequently taken together)
 V(net_virtus_b)$clust = cluster_walktrap(net_virtus_b)$membership
+# Remove clusters, consist of only one node
 V(net_virtus_b)$clust = ifelse(
-  !(duplicated(V(net_virtus_b)$clust) | duplicated(V(net_virtus_b)$clust, fromLast = TRUE)),
-  NA, V(net_virtus_b)$clust)
+  V(net_virtus_b)$clust %in% names(which(table(V(net_virtus_b)$clust) > 1)),
+  V(net_virtus_b)$clust, NA)
 
-ggraph(net_virtus_b, layout = 'manual', node.position = net_virtus_layout) + 
+# Draw network of Virtus.pro hero picking strategy for Boston tournaments (before patch)
+net_vis_virtus_boston = ggraph(net_virtus_b, layout = 'manual', node.position = net_virtus_layout) + 
     geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
     geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
     geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
     scale_edge_alpha(range = c(0.3, 0.9)) +
-    facet_edges(~competition) + 
+    facet_edges(~competition) +
     theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
 
-
-
-# VIRTUS PRO Kiev
-net_virtus_k = delete.edges(net_virtus, which(E(net_virtus)$competition != "Kiev"))
-
-V(net_virtus_k)$clust = cluster_walktrap(net_virtus_k)$membership
-V(net_virtus_k)$clust = ifelse(
-  !(duplicated(V(net_virtus_k)$clust) | duplicated(V(net_virtus_k)$clust, fromLast = TRUE)),
-  NA, V(net_virtus_k)$clust)
-
-ggraph(net_virtus_k, layout = 'manual', node.position = net_virtus_layout) + 
-    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
-    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
-    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
-    scale_edge_alpha(range = c(0.3, 0.9)) +
-    facet_edges(~competition) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
-
+net_vis_virtus_boston
 ```
 
 ```{r}
+# Team histroty of Virtus.pro team for Kiev Major
+net_virtus_k = delete.edges(net_virtus, which(E(net_virtus)$competition != "Kiev"))
+
+# Community detection
+V(net_virtus_k)$clust = cluster_walktrap(net_virtus_k)$membership
+V(net_virtus_k)$clust = ifelse(
+  V(net_virtus_k)$clust %in% names(which(table(V(net_virtus_k)$clust) > 1)),
+  V(net_virtus_k)$clust, NA)
+
+# Draw network of Virtus.pro hero picking strategy for Kiev tournaments (after patch)
+net_vis_virtus_kiev = ggraph(net_virtus_k, layout = 'manual', node.position = net_virtus_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+net_vis_virtus_kiev
+```
+
+```{r}
+# Do the same for OG Dota2 team
 edg_filtered = edg %>%
   filter(team == "OG Dota2")
 
+# Load to igraph 
 net_og = graph_from_data_frame(edg_filtered, directed = FALSE)
 
-# OG PRO
+# Pre-compute layout
 net_og_layout = layout.fruchterman.reingold(net_og)
 net_og_layout = as.data.frame(net_og_layout)
 names(net_og_layout) = c("x", "y")
 
-ggraph(net_og, layout = 'manual', node.position = net_og_layout) + 
+# Draw graph
+net_vis_og = ggraph(net_og, layout = 'manual', node.position = net_og_layout) + 
     geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
     geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
     geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
@@ -116,47 +191,59 @@ ggraph(net_og, layout = 'manual', node.position = net_og_layout) +
     facet_edges(~competition) + 
     theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
 
-
-# OG PRO BOSTON
-net_og_b = delete.edges(net_og, which(E(net_og)$comp != "Boston"))
-
-V(net_og_b)$clust = cluster_walktrap(net_og_b)$membership
-V(net_og_b)$clust = ifelse(
-  !(duplicated(V(net_og_b)$clust) | duplicated(V(net_og_b)$clust, fromLast = TRUE)),
-  NA, V(net_og_b)$clust)
-
-unique(V(net_og_b)$clust)
-ggraph(net_og_b, layout = 'manual', node.position = net_og_layout) + 
-    geom_edge_fan(aes(alpha = share_win, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
-    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
-    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
-    scale_edge_alpha(range = c(0.3, 0.9)) +
-    facet_edges(~comp) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
-
-
-
-# VIRTUS PRO Kiev
-net_og_k = delete.edges(net_og, which(E(net_og)$comp != "Kiev"))
-
-V(net_og_k)$clust = cluster_walktrap(net_og_k)$membership
-V(net_og_k)$clust = ifelse(
-  !(duplicated(V(net_og_k)$clust) | duplicated(V(net_og_k)$clust, fromLast = TRUE)),
-  NA, V(net_og_k)$clust)
-
-ggraph(net_og_k, layout = 'manual', node.position = net_og_layout) + 
-    geom_edge_fan(aes(alpha = share_win, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
-    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
-    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
-    scale_edge_alpha(range = c(0.3, 0.9)) +
-    facet_edges(~comp) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
-
+net_vis_og
 ```
 
+```{r}
+# Take matches in Boston for OG team
+net_og_b = delete.edges(net_og, which(E(net_og)$competition != "Boston"))
 
-# 2 задания
-# какие герои остались, какие пропали
+# Community detection
+V(net_og_b)$clust = cluster_walktrap(net_og_b)$membership
+V(net_og_b)$clust = ifelse(
+  V(net_og_b)$clust %in% names(which(table(V(net_og_b)$clust) > 1)),
+  V(net_og_b)$clust, NA)
+
+# Draw
+net_vis_og_boston = ggraph(net_og_b, layout = 'manual', node.position = net_og_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+net_vis_og_boston
+```
+
+```{r}
+# Take matches in Kiev for OG team
+net_og_k = delete.edges(net_og, which(E(net_og)$competition != "Kiev"))
+
+# Community detection
+V(net_og_k)$clust = cluster_walktrap(net_og_k)$membership
+V(net_og_k)$clust = ifelse(
+  V(net_og_k)$clust %in% names(which(table(V(net_og_k)$clust) > 1)),
+  V(net_og_k)$clust, NA)
+
+# Draw
+net_vis_og_kiev = ggraph(net_og_k, layout = 'manual', node.position = net_og_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+net_vis_og_kiev
+```
+
+# Things to do
+1. Take a look which characters were 
+
+
+
+
 
 
 
