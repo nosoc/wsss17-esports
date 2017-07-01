@@ -15,7 +15,7 @@ library(tidyr)
 library(dplyr)
 library(stringr)
 library(proxy)
-chat <- read_feather("tut_chat_df.rda")
+chat <- read_feather("tut_chat_df.feather")
 chat$text.clean = chat$text %>% tolower() %>% str_replace_all(regex("http:.*( |$)")," ")  %>% str_replace_all(regex("[:punct:]")," ")
 head(chat,3)
 ```
@@ -119,7 +119,7 @@ topicsdist_f = topicsdist_f %>% gather(topic,prob,1:50) %>% group_by(viewer) %>%
 
 Here is our interpretation of topics. Let's match our labels of topics with viewers.
 ```{r}
-load("tut_topics.rda")
+load("tut_topics.feather")
 head(topics)
 topicsdist_f = left_join(topicsdist_f,topics)
 head(topicsdist_f)
@@ -181,7 +181,7 @@ https://www.reddit.com/r/Twitch/
 We can assume that the most of the chat activity is tightly connected with the game events. Let's try to analyze association of chat communication and game events in one game. We already know how to analyze the association between the cluster and thematic category (Remember chanks 130-149). Now, please choose one game event and assess the relationship between game event and topics of communication. What is the interpretation of your findings?
 
 ```{r} 
-match.df <- read_feather("tut_chat_df_task.rda")
+match.df <- read_feather("tut_chat_df_task.feather")
 ``` 
 
 'match.df' object contains chat communication during one particular game: 
