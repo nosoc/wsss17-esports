@@ -45,14 +45,14 @@ V(g)$color = c("green", "green", "green", "green", "red")
 E(g)$weight = c(1, 2, 4, 1)
 ```
 
-The easiest way to draw a network is to use standart igraph plot function. The plot command has many parameters that control the behavior of the visualization.
+The easiest way to draw a network is to use standard igraph plot function. The plot command has many parameters that control the behavior of the visualization.
 
 ```{r}
 plot(g)
 plot(g, vertex.color = V(g)$color, edge.width = E(g)$weight)
 ```
 
-Moreover, you can use ggraph. It extends the grammar of graphics provided by ggplot2 to cover network data. ggraph is a flexible and powerful tool for network viualization and comes with a support for igraph data objects.
+Moreover, you can use ggraph. It extends the grammar of graphics provided by ggplot2 to cover network data. ggraph is a flexible and powerful tool for network visualization and comes with a support for igraph data objects.
 
 It works with the same three core concepts that are quite easy to understand:
 
@@ -331,5 +331,5 @@ net_vis_og_kiev
 ```
 
 # Tasks
-1. Find heroes with the highest betwenneess centrality for OG Dota2 team at Kiev Major. Are they different with those, which we found for Virtus.pro? Do they unite clusters? What are these clusters?
+1. Find heroes with the highest betwenneess centrality for OG Dota2 team at Kiev Major. Are they different from those, which we found for Virtus.pro? How can we interpret the clusters, united by these heroes? 
 2. Take one more Dota2 team (e.g. "Invictus Gaming", "Natus Vincere", "Team NP" or "Team Secret"), analyse its' hero picking pattern and compare with the cases of "OG Dota2" and "Virtus.pro".
