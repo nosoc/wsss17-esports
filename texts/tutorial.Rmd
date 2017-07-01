@@ -153,10 +153,10 @@ ggplot() +
 Now, let's take a look on messages specific for each group of users.
 ```{r}
 chat = left_join(chat,tab)
-View(filter(chat,clusterCut==1)) # Reflection of stream like retelling of seen and emotional responce
-View(filter(chat,clusterCut==2)) # Reflection of stream like retelling of seen and emotional responce
-View(filter(chat,clusterCut==3)) # Attempts to discuss actions and events (to some extent)
-View(filter(chat,clusterCut==4)) # spammers against modes
+View(filter(chat,clusterCut==1)) # Spectators reflections on the game, emotional responce
+View(filter(chat,clusterCut==2)) # Spectators reflections on the game, emotional responce
+View(filter(chat,clusterCut==3)) # Attempts to discuss actions and events
+View(filter(chat,clusterCut==4)) # spammers against moderators: cheating the bots
 View(filter(chat,clusterCut==5)) # warning bot
 View(filter(chat,clusterCut==6)) # promotion bot
 View(filter(chat,clusterCut==7)) # hahaa meme
@@ -172,7 +172,7 @@ http://mashable.com/2014/08/08/twitch-emoticons/#vcBMu94oJGqt
 https://twitchemotes.com/
 https://www.reddit.com/r/DotA2/comments/3gujjn/basic_guide_to_twitch_emotes_in_dota/
 
-Do not hesitate to search here for meaning of emote:
+Do not hesitate to search here for meaning of emoji:
 https://www.reddit.com/r/Twitch/
 
 
