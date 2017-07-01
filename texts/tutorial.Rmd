@@ -9,12 +9,13 @@ output: html_document
 The texts have to be preprocessed before the application of topic modeling. In the following chunk, we remove links to web pages and punctiation. We do not remove numbers, because, in some cases, they represent memes which are important for Dota 2 community. Besides, we convert letters to the lowercase.
 
 ```{r}
+library(feather)
 library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(stringr)
 library(proxy)
-load("tut_chat_df.rda")
+chat <- read_feather("~/tut_chat_df.rda")
 chat$text.clean = chat$text %>% tolower() %>% str_replace_all(regex("http:.*( |$)")," ")  %>% str_replace_all(regex("[:punct:]")," ")
 head(chat,3)
 ```
@@ -152,9 +153,9 @@ ggplot() +
 Now, let's take a look on messages specific for each group of users.
 ```{r}
 chat = left_join(chat,tab)
-View(filter(chat,clusterCut==1)) # communication with stream
-View(filter(chat,clusterCut==2)) # reactions on stream
-View(filter(chat,clusterCut==3)) # Discussion of action (to some extent)
+View(filter(chat,clusterCut==1)) # Reflection of stream like retelling of seen and emotional responce
+View(filter(chat,clusterCut==2)) # Reflection of stream like retelling of seen and emotional responce
+View(filter(chat,clusterCut==3)) # Attempts to discuss actions and events (to some extent)
 View(filter(chat,clusterCut==4)) # spammers against modes
 View(filter(chat,clusterCut==5)) # warning bot
 View(filter(chat,clusterCut==6)) # promotion bot
@@ -180,10 +181,10 @@ https://www.reddit.com/r/Twitch/
 We can assume that the most of the chat activity is tightly connected with the game events. Let's try to analyze association of chat communication and game events in one game. We already know how to analyze the association between the cluster and thematic category (Remember chanks 130-149). Now, please choose one game event and assess the relationship between game event and topics of communication. What is the interpretation of your findings?
 
 ```{r} 
-load(file="tut_text_df_task.rda")
+match.df <- read_feather("~/tut_chat_df_task.rda")
 ``` 
 
-'match_df' object contains chat communication during one particular game: 
+'match.df' object contains chat communication during one particular game: 
 The game on Dotabuff: https://www.dotabuff.com/matches/2836936292  
 The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042  
 
