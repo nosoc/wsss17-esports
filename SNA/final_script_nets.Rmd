@@ -1,0 +1,164 @@
+
+# commented r packages loadings
+```{r}
+library(magrittr)
+library(dplyr)
+library(igraph)
+library(ggplot2)
+library(ggraph)
+```
+
+# read dataset
+```{r}
+# co-usage of heroes during dota2 matches, two competitions 
+edg = read.csv("./teams.csv", stringsAsFactors = FALSE)
+```
+
+# скрипт и ссылки на то откуда данные
+# +
+# добавить слайдв про сна и про героев, описание данных, патчей
+
+# введение в гграф и айграф
+
+# сравнение двух команд просто
+```{r}
+edg_filtered = edg %>%
+  filter(team %in% c("OG Dota2", "Virtus.pro"),
+         competition == "Kiev")
+
+net = graph_from_data_frame(edg_filtered, directed = FALSE)
+
+ggraph(net, layout = 'fr') + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~ team) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+```
+
+# сравнение до/после патча для двух команд
+```{r}
+# комбинации героев
+# кластеризация?
+edg_filtered = edg %>%
+  filter(team == "Virtus.pro")
+
+net_virtus = graph_from_data_frame(edg_filtered, directed = FALSE)
+
+# VIRTUS PRO
+net_virtus_layout = layout.fruchterman.reingold(net_virtus)
+net_virtus_layout = as.data.frame(net_virtus_layout)
+names(net_virtus_layout) = c("x", "y")
+
+ggraph(net_virtus, layout = 'manual', node.position = net_virtus_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+
+
+# VIRTUS PRO BOSTON
+net_virtus_b = delete.edges(net_virtus, which(E(net_virtus)$competition != "Boston"))
+
+V(net_virtus_b)$clust = cluster_walktrap(net_virtus_b)$membership
+V(net_virtus_b)$clust = ifelse(
+  !(duplicated(V(net_virtus_b)$clust) | duplicated(V(net_virtus_b)$clust, fromLast = TRUE)),
+  NA, V(net_virtus_b)$clust)
+
+ggraph(net_virtus_b, layout = 'manual', node.position = net_virtus_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+
+
+# VIRTUS PRO Kiev
+net_virtus_k = delete.edges(net_virtus, which(E(net_virtus)$competition != "Kiev"))
+
+V(net_virtus_k)$clust = cluster_walktrap(net_virtus_k)$membership
+V(net_virtus_k)$clust = ifelse(
+  !(duplicated(V(net_virtus_k)$clust) | duplicated(V(net_virtus_k)$clust, fromLast = TRUE)),
+  NA, V(net_virtus_k)$clust)
+
+ggraph(net_virtus_k, layout = 'manual', node.position = net_virtus_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+```
+
+```{r}
+edg_filtered = edg %>%
+  filter(team == "OG Dota2")
+
+net_og = graph_from_data_frame(edg_filtered, directed = FALSE)
+
+# OG PRO
+net_og_layout = layout.fruchterman.reingold(net_og)
+net_og_layout = as.data.frame(net_og_layout)
+names(net_og_layout) = c("x", "y")
+
+ggraph(net_og, layout = 'manual', node.position = net_og_layout) + 
+    geom_edge_fan(aes(alpha = percentage_wins, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(fill = "gray75", shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~competition) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+
+# OG PRO BOSTON
+net_og_b = delete.edges(net_og, which(E(net_og)$comp != "Boston"))
+
+V(net_og_b)$clust = cluster_walktrap(net_og_b)$membership
+V(net_og_b)$clust = ifelse(
+  !(duplicated(V(net_og_b)$clust) | duplicated(V(net_og_b)$clust, fromLast = TRUE)),
+  NA, V(net_og_b)$clust)
+
+unique(V(net_og_b)$clust)
+ggraph(net_og_b, layout = 'manual', node.position = net_og_layout) + 
+    geom_edge_fan(aes(alpha = share_win, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~comp) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+
+
+# VIRTUS PRO Kiev
+net_og_k = delete.edges(net_og, which(E(net_og)$comp != "Kiev"))
+
+V(net_og_k)$clust = cluster_walktrap(net_og_k)$membership
+V(net_og_k)$clust = ifelse(
+  !(duplicated(V(net_og_k)$clust) | duplicated(V(net_og_k)$clust, fromLast = TRUE)),
+  NA, V(net_og_k)$clust)
+
+ggraph(net_og_k, layout = 'manual', node.position = net_og_layout) + 
+    geom_edge_fan(aes(alpha = share_win, width = n_matches), show.legend = TRUE, colour = "steelblue3") + 
+    geom_node_point(aes(fill = as.factor(clust)), shape = 21, color = "gray30", size = 5) + 
+    geom_node_text(aes(label = name), color = 'black', size = 3, repel = TRUE) +
+    scale_edge_alpha(range = c(0.3, 0.9)) +
+    facet_edges(~comp) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+
+```
+
+
+# 2 задания
+# какие герои остались, какие пропали
+
+
+
+
+
