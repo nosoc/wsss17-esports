@@ -52,7 +52,7 @@ for (wint_line in wint_lines) {
     cur_topic = as.numeric(str_replace(str_extract(wint_line, 'Topic [0-9]+'), 'Topic ', ''))
   } else {
     wint_split <- str_split(wint_line, '\t')[[1]]
-    wint <- rbind(wint, data.frame(topic=cur_topic, word=wint_split[2], porb=as.numeric(wint_split[3])))    
+    wint <- rbind(wint, data.frame(topic=cur_topic, word=wint_split[2], prob=as.numeric(wint_split[3])))    
   }
 }
 
@@ -164,16 +164,18 @@ https://www.reddit.com/r/Twitch/
 
 
 ```{r}
-View(filter(chat,clusterCut==1))
-View(filter(chat,clusterCut==2))
-View(filter(chat,clusterCut==3))
-View(filter(chat,clusterCut==4))
-View(filter(chat,clusterCut==5))
-View(filter(chat,clusterCut==6))
-View(filter(chat,clusterCut==7))
+View(filter(chat,clusterCut==1)) # reactions on stream
+View(filter(chat,clusterCut==2)) # reactions on stream
+View(filter(chat,clusterCut==3)) # one spammer
+View(filter(chat,clusterCut==4)) # different spammers -- reddit memes and copypaste messages
+View(filter(chat,clusterCut==5)) # warning bot
+View(filter(chat,clusterCut==6)) # promotion bot
+View(filter(chat,clusterCut==7)) # kappa spammer. Kappa is the most popular emoji on twitch.tv
 ```
 
-What else? It is not limited with users profiling. There are also game events. Let's try to analyze association of chat communication and game events in one game.
+# Task
+
+It is not limited with users profiling. There are also game events. Let's try to analyze association of chat communication and game events in one game.
 
 ```{r}
 load(file="tut_text_df_task.rda")
