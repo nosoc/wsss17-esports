@@ -77,7 +77,7 @@ ggraph(graph, layout = 'kk') +
 In that tutorial we will use a dataset about co-usage of characters during Dota2 matches.
 Dataset covers two last major competitions, which happened in Boston and Kiev.
 
-Given csv-file (teams.csv) consist of edgelist with hero-hero pairs, which were used together in a match and metadata.
+Given csv-file (teams.csv) consist of edgelist with hero-hero pairs, which were used together in a match and metadata. An edgelist is a two-column list of the two nodes that are connected in a network.
 Meta:
 - team - title of team, which picked that pair of heroes;
 - competition - tournament, where the match took place;
