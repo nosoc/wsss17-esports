@@ -153,6 +153,13 @@ Now, let's take a look on messages specific for each group of users.
 ```{r}
 #chat = select(chat, -clusterCut)
 chat = left_join(chat,tab)
+View(filter(chat,clusterCut==1)) # reactions on stream: different short messages
+View(filter(chat,clusterCut==2)) # reactions on stream
+View(filter(chat,clusterCut==3)) # one spammer
+View(filter(chat,clusterCut==4)) # different spammers -- reddit memes and copypaste messages
+View(filter(chat,clusterCut==5)) # warning bot
+View(filter(chat,clusterCut==6)) # promotion bot
+View(filter(chat,clusterCut==7)) # kappa spammer. Kappa is the most popular emoji on twitch.tv
 ```
 
 What the hell is going on?
@@ -164,16 +171,6 @@ https://www.reddit.com/r/DotA2/comments/3gujjn/basic_guide_to_twitch_emotes_in_d
 Do not hesitate to search here for meaning of emote:
 https://www.reddit.com/r/Twitch/
 
-
-```{r}
-View(filter(chat,clusterCut==1)) # reactions on stream: different short messages
-View(filter(chat,clusterCut==2)) # reactions on stream
-View(filter(chat,clusterCut==3)) # one spammer
-View(filter(chat,clusterCut==4)) # different spammers -- reddit memes and copypaste messages
-View(filter(chat,clusterCut==5)) # warning bot
-View(filter(chat,clusterCut==6)) # promotion bot
-View(filter(chat,clusterCut==7)) # kappa spammer. Kappa is the most popular emoji on twitch.tv
-```
 
 # Task
 
