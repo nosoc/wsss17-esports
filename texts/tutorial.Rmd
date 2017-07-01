@@ -41,7 +41,7 @@ TopicsDistributionOnUsers.txt -- matrix in which rows are users and columns are 
 
 Here, we get top-20 of the most probable words for each topic.
 ```{r}
-wint_lines = readLines("WordsInTopics.txt"))
+wint_lines = readLines("WordsInTopics.txt")
 cur_topic = 0
 
 wint = data.frame(word=c(), topic=c(), prob=c())
