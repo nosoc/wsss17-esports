@@ -177,7 +177,7 @@ https://www.reddit.com/r/Twitch/
 
 # Task
 
-We can assume that the most of the chat activity is tightly connected with the game events. Let's try to analyze association of chat communication and game events in one game. We already know how to analyze the association between the cluster and thematic category. Now, please choose one game event and assess the relationship between game event and topics of communication. What is the interpretation of your findings?
+We can assume that the most of the chat activity is tightly connected with the game events. Let's try to analyze association of chat communication and game events in one game. We already know how to analyze the association between the cluster and thematic category (Remember chanks 130-149). Now, please choose one game event and assess the relationship between game event and topics of communication. What is the interpretation of your findings?
 
 ```{r} 
 load(file="tut_text_df_task.rda")
@@ -187,7 +187,7 @@ load(file="tut_text_df_task.rda")
 The game on Dotabuff: https://www.dotabuff.com/matches/2836936292  
 The game on YouTube: https://youtu.be/gF_m_zmckpI?t=1042  
 
-You have a number of game events. What do some of them mean?
+You have a number of game events. They are binar, which means that message can be related to game event or not. What do some of them mean?
 
 TEAM FIGHT - https://youtu.be/TGCVT2ithzI?t=17    
 ROSHAN KILL - https://youtu.be/kJAdeSCiH10?t=66   
